@@ -1,145 +1,109 @@
-# MLOps Internship Project (Weeks 8–12)
+#  MLOps Internship Project – Wine Quality Prediction API
 
-A practical, portfolio-ready MLOps project you can finish during Weeks 8–12. It follows a clear pipeline:
-**Data → Validation → Features → Train → Track → Register → Serve → Containerize → Deploy → Monitor → Document**.
+## 📌 Overview
+This project demonstrates an **end-to-end MLOps pipeline**:
+- Data ingestion, validation, and feature engineering with **DVC**
+- Model training and experiment tracking with **scikit-learn + MLflow**
+- Serving the trained model as a **FastAPI** service
+- Containerization with **Docker**
+- Deployment on **Render (Free Plan)**
+
+Dataset: **Red Wine Quality** dataset.  
+Goal: Predict wine quality (integer score) from 11 chemical features.
 
 ---
 
-## 📅 Weekly Plan (Summary)
+## ⚙️ Workflow
 
-### Week 8 – Foundations & Data
-- Repo + structure + CI (GitHub Actions)
-- `requirements.txt`
-- Data ingestion script (`src/data/make_dataset.py`)
-- Pandera schema validation (`src/data/validate.py`)
-- DVC for data versioning (`dvc init`, `dvc add`)
+```
+Data → DVC (ingest/validate/features) → Train (scikit-learn + MLflow) 
+   → API (FastAPI) → Docker → Deployment (Render)
+```
 
-### Week 9 – Features & Training
-- EDA (in `notebooks/`)
-- Feature pipeline (`src/features/build_features.py`)
-- Training (`src/models/train.py`) with MLflow logging
-- DVC pipeline (`dvc.yaml`) and `dvc repro`
+**Pipeline stages:**
+1. **Ingest**: load raw CSV data  
+2. **Validate**: schema validation with Pandera  
+3. **Features**: feature engineering, split into train/test  
+4. **Train**: RandomForest model, metrics logged with MLflow  
+5. **Serve**: FastAPI app with `/health`, `/docs`, `/predict`  
+6. **Deploy**: Hosted live on Render  
 
-### Week 10 – CI/CD + Model Registry
-- MLflow Model Registry (local or remote)
-- GitHub Action for continuous training on pushes
+---
 
-### Week 11 – Serving & Container
-- FastAPI app (`src/api/main.py`) with `/health` and `/predict`
-- Dockerfile + local container testing
+##  Project Structure
 
-### Week 12 – Cloud & Monitoring & Docs
-- Deploy container (Heroku / Cloud Run / App Runner)
-- Structured logging
-- Draft data drift plan with Evidently
-- Final README + architecture diagram links
+```
+├── data/                # raw & processed data
+├── models/              # trained artifacts (model.pkl, transformer.joblib)
+├── src/
+│   ├── api/             # FastAPI app (main.py)
+│   ├── data/            # ingestion & validation scripts
+│   ├── features/        # feature engineering
+│   └── models/          # training & inference utilities
+├── dvc.yaml             # pipeline definition
+├── requirements.txt     # dependencies
+└── Dockerfile           # container definition
+```
 
+---
 
-> **Note:** A local sample of the UCI Red Wine Quality dataset is included at `data/raw/winequality-red.csv` (semicolon-separated).
-> To fetch the full original dataset from UCI later, rerun:
->
-> ```bash
-> python src/data/make_dataset.py --url https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv --sep ";" --save_path data/raw/winequality-red.csv
-> ```
+## Deployment (Render)
 
+**Live URL:** [https://mlops-internship.onrender.com](https://mlops-internship.onrender.com)
 
-## 🧭 Quickstart
+### Endpoints
+- `GET /health` → Health check
+- `GET /docs` → Swagger UI (interactive docs)
+- `POST /predict` → Predict wine quality
 
+---
+
+## Example Usage
+
+### Request
 ```bash
-# 0) Create & activate venv (optional)
+curl -X POST https://mlops-internship.onrender.com/predict   -H "Content-Type: application/json"   -d '{"features": [[7.4,0.7,0.0,1.9,0.076,11.0,34.0,0.9978,3.51,0.56,9.4]]}'
+```
+
+### Response
+```json
+{
+  "predictions": [6],
+  "probabilities": [[...]]
+}
+```
+
+---
+
+## 🔧 Local Development
+
+### 1. Clone repo
+```bash
+git clone https://github.com/<your-username>/mlops-internship.git
+cd mlops-internship
+```
+
+### 2. Install dependencies
+```bash
 python -m venv venv
-# Linux/macOS
 source venv/bin/activate
-# Windows
-# venv\Scripts\activate
-
-# 1) Install deps
 pip install -r requirements.txt
+```
 
-# 2) Initialize DVC + Git (run inside repo root)
-git init
-dvc init
-
-# 3) Ingest data (default: wine-quality red)
-python src/data/make_dataset.py --url https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv --sep ";"
-
-# 4) Validate data schema
-python src/data/validate.py --input data/raw/data.csv --sep ";"
-
-# 5) Build features
-python src/features/build_features.py --input data/raw/data.csv --output data/processed/train.csv --sep ";"
-
-# 6) Train & log with MLflow
-python src/models/train.py --train data/processed/train.csv --target quality
-
-# 7) Run API locally (loads latest MLflow model by path)
+### 3. Run API locally
+```bash
 uvicorn src.api.main:app --reload
 ```
-
-> Replace dataset URL with your internship dataset later. Keep the same commands—only change paths/columns in `params.yaml` or script flags.
-
----
-
-## 📦 Repo Layout
-
-```
-.
-├─ .github/workflows/
-│  ├─ ci.yml
-│  └─ cd-train.yml
-├─ data/
-│  ├─ raw/
-│  └─ processed/
-├─ notebooks/
-├─ src/
-│  ├─ data/
-│  │  ├─ make_dataset.py
-│  │  └─ validate.py
-│  ├─ features/
-│  │  └─ build_features.py
-│  ├─ models/
-│  │  ├─ train.py
-│  │  └─ infer_utils.py
-│  └─ api/
-│     └─ main.py
-├─ dvc.yaml
-├─ params.yaml
-├─ requirements.txt
-├─ Dockerfile
-└─ README.md
-```
+Open: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 ---
 
-## 🧪 CI
-- `ci.yml` runs linting/quick import tests.
-- `cd-train.yml` shows how to run DVC/MLflow on push (tweak secrets as needed).
+## 📊 Monitoring
+- **Logs**: View via Render Dashboard
+- **Planned**: Weekly **data drift detection** using Evidently AI to compare new vs training data distributions.
 
 ---
 
-## 🗃 DVC
-Track large files, datasets and pipeline stages. Example:
-```bash
-dvc add data/raw/data.csv
-git add data/raw/data.csv.dvc data/.gitignore
-git commit -m "Track raw data with DVC"
-```
-
----
-
-## 🧰 MLflow
-- Local tracking default: `mlruns/` folder.
-- To run UI: `mlflow ui --backend-store-uri mlruns`
-
----
-
-## ☁️ Deployment
-- Fill `infra/` with provider-specific scripts (Heroku/Cloud Run). See README sections inside.
-
----
-
-## 🧩 Next Steps
-- Swap dataset to your internship dataset.
-- Update `params.yaml` with correct target/feature columns.
-- Add unit tests and expand CI.
-- Add data drift monitoring plan (Evidently) in README.
+## 📈 Results
+- Trained on red wine dataset (`winequality-red.csv`)
+- Baseline model: RandomForest
