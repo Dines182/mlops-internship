@@ -1,0 +1,63 @@
+schema: '2.0'
+stages:
+  ingest:
+    cmd: python src/data/make_dataset.py --url data/raw/winequality-red-source.csv
+      --sep "," --save_path data/raw/winequality-red.csv
+    deps:
+    - path: data/raw/winequality-red-source.csv
+      hash: md5
+      md5: 7d814a1bda02145efe703f4e1c01847a
+      size: 91999
+    - path: src/data/make_dataset.py
+      hash: md5
+      md5: d64665fe605d9eedabc9531cb91cefe5
+      size: 1072
+    outs:
+    - path: data/raw/winequality-red.csv
+      hash: md5
+      md5: 7d814a1bda02145efe703f4e1c01847a
+      size: 91999
+  validate:
+    cmd: python src/data/validate.py --input data/raw/winequality-red.csv --sep ","
+    deps:
+    - path: data/raw/winequality-red.csv
+      hash: md5
+      md5: 7d814a1bda02145efe703f4e1c01847a
+      size: 91999
+    - path: src/data/validate.py
+      hash: md5
+      md5: a1a08e8ecffb6e2f9cd758bea2a960de
+      size: 4028
+  features:
+    cmd: python src/features/build_features.py --input data/raw/winequality-red.csv
+      --output data/processed/train.csv --sep ","
+    deps:
+    - path: data/raw/winequality-red.csv
+      hash: md5
+      md5: 7d814a1bda02145efe703f4e1c01847a
+      size: 91999
+    - path: src/features/build_features.py
+      hash: md5
+      md5: a9691e6a7c91bde6da0a992877bcee6d
+      size: 1914
+    outs:
+    - path: data/processed/train.csv
+      hash: md5
+      md5: d6dded45f97a8e239b8321d3fdc695b7
+      size: 73634
+  train:
+    cmd: python src/models/train.py --train data/processed/train.csv --target quality
+    deps:
+    - path: data/processed/train.csv
+      hash: md5
+      md5: d6dded45f97a8e239b8321d3fdc695b7
+      size: 73634
+    - path: src/models/train.py
+      hash: md5
+      md5: c3900bd2a11467b5da373ab755518552
+      size: 1971
+    outs:
+    - path: models/model.pkl
+      hash: md5
+      md5: 4447af99993bf286ada5791704afcfb9
+      size: 7694297

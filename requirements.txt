@@ -1,0 +1,12 @@
+pandas
+numpy
+scikit-learn
+pandera
+mlflow
+dvc[all]
+fastapi
+uvicorn
+structlog
+joblib
+pydantic
+matplotlib

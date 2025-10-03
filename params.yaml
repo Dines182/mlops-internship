@@ -1,0 +1,8 @@
+# Hyperparameters and column configs
+target: quality
+test_size: 0.2
+random_state: 42
+model:
+  type: RandomForestClassifier
+  n_estimators: 200
+  max_depth: 10
