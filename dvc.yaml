@@ -1,0 +1,29 @@
+stages:
+  ingest:
+    cmd: python src/data/make_dataset.py --url https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv --sep ";" --save_path data/raw/winequality-red.csv
+    deps:
+      - src/data/make_dataset.py
+    outs:
+      - data/raw/winequality-red.csv
+
+  validate:
+    cmd: python src/data/validate.py --input data/raw/winequality-red.csv --sep ";"
+    deps:
+      - src/data/validate.py
+      - data/raw/winequality-red.csv
+
+  features:
+    cmd: python src/features/build_features.py --input data/raw/winequality-red.csv --output data/processed/train.csv --sep ";"
+    deps:
+      - src/features/build_features.py
+      - data/raw/winequality-red.csv
+    outs:
+      - data/processed/train.csv
+
+  train:
+    cmd: python src/models/train.py --train data/processed/train.csv --target quality
+    deps:
+      - src/models/train.py
+      - data/processed/train.csv
+    outs:
+      - models/model.pkl
